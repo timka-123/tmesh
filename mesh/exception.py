@@ -1,0 +1,6 @@
+class MeshException(Exception):
+    ...
+
+
+class InputSessionException(MeshException):
+    ...
