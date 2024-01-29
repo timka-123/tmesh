@@ -1,14 +1,13 @@
-from asyncio import run
-from typing import Optional
+from typing import Optional, Literal
+from logging import debug
 
 from aiohttp import ClientSession
 
 from exception import InputSessionException
-from mesh_types import UserV3, UserInfo, UserRole, Subsystem
 
 
 class MeshClient:
-    async def __init__(
+    def __init__(
             self,
             token: str,
             session: Optional[ClientSession] = None,
@@ -25,24 +24,16 @@ class MeshClient:
                     "Authorization": f"Bearer {token}",
                     "Auth-token": token,
                     "X-mes-subsystem": "familyweb",
-                    "X-Mes-Role": "student" # now only students support
+                    "X-Mes-Role": "student"  # now only students support
                 }
             )
         else:
             if not session.headers.get("Authorization") or not session.headers.get("Auth-token") \
-                or not session.headers.get("X-mes-subsystem") or session.headers.get("X-mes-role"):
-                raise InputSessionException("Not enought headers for mesh work")
+                    or not session.headers.get("X-mes-subsystem") or session.headers.get("X-mes-role"):
+                raise InputSessionException("Not enough headers for mesh work")
             self._session = session
         self._token = token
         self._baseurl = "https://ms-edu.tatar.ru"
 
-    async def get_me(self) -> UserV3:
-        """Get your profile by v3 version endpoints"""
-        response = await self._session.get(self._baseurl + "/v3/userinfo")
-        data = await response.data()
-        data['info'] = UserInfo(**data['info'])
-        data['roles'] = []
-        for role in data['roles']:
-            role['subsystems'] = [Subsystem(**ss) for ss in role['symsystems']]
-            data['roles'].append(UserRole(**role))
-        return UserV3(**data)
+    async def request(self, version: Literal["v3", "v1"], method: str, *args, **kwargs):
+        ...
